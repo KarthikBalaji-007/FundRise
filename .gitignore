@@ -1,0 +1,25 @@
+# Node / npm
+node_modules/
+npm-debug.log*
+yarn.lock
+package-lock.json
+
+# Build outputs
+dist/
+build/
+.out/
+.next/
+coverage/
+
+# Environment
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
