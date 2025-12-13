@@ -13,7 +13,7 @@ const DashboardPage = () => {
     const fetchMyCampaigns = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('/campaigns/my/campaigns');
+        const res = await axios.get('/campaigns/my-campaigns'); // FIXED: removed extra slash
         setCampaigns(res.data.campaigns || []);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load your campaigns');
@@ -28,6 +28,23 @@ const DashboardPage = () => {
       setLoading(false);
     }
   }, [user]);
+
+  // FIXED: handleDelete moved OUTSIDE useEffect
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/campaigns/${id}`);
+      // Remove from local state
+      setCampaigns((prev) => prev.filter((c) => c._id !== id));
+      alert('Campaign deleted successfully!');
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert(err.response?.data?.message || 'Failed to delete campaign');
+    }
+  };
 
   // Calculate stats
   const totalRaised = campaigns.reduce((sum, c) => sum + c.currentAmount, 0);
@@ -124,6 +141,9 @@ const DashboardPage = () => {
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Days Left
                         </th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -150,6 +170,20 @@ const DashboardPage = () => {
                             {campaign.fundingPercentage}%
                           </td>
                           <td className="px-4 py-3 text-sm">{campaign.daysLeft} days</td>
+                          <td className="px-4 py-3 text-sm space-x-2">
+                            <Link
+                              to={`/campaigns/edit/${campaign._id}`}
+                              className="inline-block px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                              Edit
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(campaign._id)}
+                              className="px-3 py-1.5 text-sm rounded-md bg-red-600 text-white hover:bg-red-700"
+                            >
+                              Delete
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

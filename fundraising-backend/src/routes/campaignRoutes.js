@@ -3,7 +3,6 @@ const router = express.Router();
 const { authenticate } = require('../middlewares/authMiddleware');
 const { isCreator } = require('../middlewares/roleCheck');
 const { adminOnly } = require('../middlewares/adminCheck');
-
 const {
   createCampaign,
   getAllCampaigns,
@@ -19,23 +18,20 @@ const {
 
 // Public routes
 router.get('/', getAllCampaigns);
-router.get('/:slug', getCampaignBySlug);
 router.post('/:id/view', incrementViewCount);
 
-// Protected routes - Creator only
+// PROTECTED ROUTES - MUST BE BEFORE /:slug
+router.get('/my-campaigns', authenticate, getMyCampaigns); // THIS FIRST!
 router.post('/', authenticate, isCreator, createCampaign);
 router.put('/:id', authenticate, isCreator, updateCampaign);
 router.delete('/:id', authenticate, isCreator, deleteCampaign);
-router.get('/my/campaigns', authenticate, getMyCampaigns);
 
-// ============ ADMIN ROUTES ============
-// Get pending campaigns (Admin only)
+// ADMIN ROUTES - BEFORE /:slug
 router.get('/admin/pending', authenticate, adminOnly, getPendingCampaigns);
-
-// Approve campaign (Admin only)
 router.put('/:id/approve', authenticate, adminOnly, approveCampaign);
-
-// Reject campaign (Admin only)
 router.put('/:id/reject', authenticate, adminOnly, rejectCampaign);
+
+// GET BY SLUG - MUST BE LAST!
+router.get('/:slug', getCampaignBySlug);
 
 module.exports = router;

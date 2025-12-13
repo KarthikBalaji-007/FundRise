@@ -9,6 +9,9 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import DonorDashboardPage from './pages/DonorDashboardPage';
+import EditCampaignPage from './pages/EditCampaignPage';
 
 function App() {
   return (
@@ -33,13 +36,31 @@ function App() {
             }
           />
           <Route
-          path="/campaigns/create"
-          element={
+            path="/campaigns/create"
+            element={
+              <ProtectedRoute>
+                <CreateCampaignPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/donor/dashboard" element={
             <ProtectedRoute>
-              <CreateCampaignPage />
+              <DonorDashboardPage />
             </ProtectedRoute>
-          }
-        />
+          } />
+          <Route path="/campaigns/edit/:id" element={
+            <ProtectedRoute>
+              <EditCampaignPage />
+            </ProtectedRoute>
+          } />
 
           {/* 404 route */}
           <Route

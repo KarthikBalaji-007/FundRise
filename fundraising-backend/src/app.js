@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const donationRoutes = require('./routes/donationRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/campaigns', require('./routes/campaignRoutes'));
+app.use('/api/donations', donationRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

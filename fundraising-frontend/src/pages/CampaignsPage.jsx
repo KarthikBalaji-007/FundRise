@@ -12,6 +12,7 @@ const CampaignsPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Fetch campaigns whenever filters change
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
@@ -32,27 +33,38 @@ const CampaignsPage = () => {
       }
 
       const res = await axios.get('/campaigns', { params });
-
       setCampaigns(res.data.campaigns || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) {
-      setError(
-        err.response?.data?.message || 'Failed to load campaigns. Please try again.'
-      );
+      setError(err.response?.data?.message || 'Failed to load campaigns. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch on mount and when page/sort/category change
   useEffect(() => {
     fetchCampaigns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, sortBy]);
+  }, [page, sortBy, selectedCategory]);
 
+  // Handle search form submit
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    setPage(1);
+    setPage(1); // Reset to page 1 when searching
     fetchCampaigns();
+  };
+
+  // Handle category change
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+    setPage(1); // Reset to page 1
+  };
+
+  // Handle sort change
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+    setPage(1); // Reset to page 1
   };
 
   return (
@@ -69,53 +81,79 @@ const CampaignsPage = () => {
         </div>
 
         {/* Search and Filters */}
-        <form
-          onSubmit={handleSearchSubmit}
-          className="bg-white rounded-lg shadow-md p-4 mb-8"
-        >
-          <div className="grid md:grid-cols-3 gap-4 items-center">
+        <form onSubmit={handleSearchSubmit} className="bg-white rounded-lg shadow-md p-4 mb-8">
+          <div className="grid md:grid-cols-4 gap-4 items-end">
             {/* Search */}
-            <input
-              type="text"
-              placeholder="Search campaigns..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search
+              </label>
+              <input
+                type="text"
+                placeholder="Search campaigns..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
             {/* Category */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Categories</option>
-              <option value="medical">Medical</option>
-              <option value="education">Education</option>
-              <option value="emergency">Emergency</option>
-              <option value="charity">Charity</option>
-              <option value="creative">Creative</option>
-            </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={handleCategoryChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Categories</option>
+                <option value="medical">Medical</option>
+                <option value="education">Education</option>
+                <option value="emergency">Emergency</option>
+                <option value="charity">Charity</option>
+                <option value="creative">Creative</option>
+              </select>
+            </div>
 
-            {/* Sort + Apply */}
-            <div className="flex gap-3">
+            {/* Sort */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sort By
+              </label>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={handleSortChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="trending">Sort by Trending</option>
-                <option value="newest">Sort by Newest</option>
-                <option value="ending-soon">Sort by Ending Soon</option>
+                <option value="newest">Newest</option>
+                <option value="trending">Trending</option>
+                <option value="ending-soon">Ending Soon</option>
               </select>
-
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Apply
-              </button>
             </div>
+          </div>
+
+          {/* Search Button */}
+          <div className="mt-4">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Search
+            </button>
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm('');
+                  setPage(1);
+                  fetchCampaigns();
+                }}
+                className="ml-2 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Clear
+              </button>
+            )}
           </div>
         </form>
 
@@ -131,10 +169,15 @@ const CampaignsPage = () => {
           <div className="text-center py-16 text-gray-600">Loading campaigns...</div>
         ) : campaigns.length === 0 ? (
           <div className="text-center py-16 text-gray-600">
-            No campaigns found yet. Check back later.
+            No campaigns found. Try adjusting your search filters.
           </div>
         ) : (
           <>
+            {/* Results Count */}
+            <div className="mb-4 text-gray-600">
+              Found {campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''}
+            </div>
+
             {/* Campaign Grid */}
             <CampaignGrid campaigns={campaigns} />
 
