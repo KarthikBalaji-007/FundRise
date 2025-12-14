@@ -26,6 +26,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/campaigns', require('./routes/campaignRoutes'));
 app.use('/api/donations', donationRoutes);
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Error handler
 app.use((err, req, res, next) => {

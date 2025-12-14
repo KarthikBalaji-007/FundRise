@@ -1,19 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import axios from '../utils/axios';
 import { Link } from 'react-router-dom';
 
 const DashboardPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Auto-redirect admin to admin dashboard
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin/dashboard');
+    } else if (user?.role === 'donor') {
+      navigate('/donor/dashboard');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const fetchMyCampaigns = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('/campaigns/my-campaigns'); // FIXED: removed extra slash
+        const res = await axios.get('/campaigns/my-campaigns');
         setCampaigns(res.data.campaigns || []);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load your campaigns');
@@ -29,7 +40,6 @@ const DashboardPage = () => {
     }
   }, [user]);
 
-  // FIXED: handleDelete moved OUTSIDE useEffect
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
       return;
@@ -37,7 +47,6 @@ const DashboardPage = () => {
 
     try {
       await axios.delete(`/campaigns/${id}`);
-      // Remove from local state
       setCampaigns((prev) => prev.filter((c) => c._id !== id));
       alert('Campaign deleted successfully!');
     } catch (err) {
@@ -194,11 +203,7 @@ const DashboardPage = () => {
           </>
         ) : (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <p className="text-gray-600">
-              {user?.role === 'donor'
-                ? 'Donor dashboard coming soon.'
-                : 'Welcome to your dashboard.'}
-            </p>
+            <p className="text-gray-600">Welcome to your dashboard.</p>
           </div>
         )}
       </div>

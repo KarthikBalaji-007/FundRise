@@ -26,15 +26,12 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Protected routes - Role-based dashboards */}
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+          <Route path="/donor/dashboard" element={<ProtectedRoute><DonorDashboardPage /></ProtectedRoute>} />
+
+          {/* Campaign routes */}
           <Route
             path="/campaigns/create"
             element={
@@ -44,23 +41,13 @@ function App() {
             }
           />
           <Route
-            path="/admin"
+            path="/campaigns/edit/:id"
             element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminDashboardPage />
+              <ProtectedRoute>
+                <EditCampaignPage />
               </ProtectedRoute>
             }
           />
-          <Route path="/donor/dashboard" element={
-            <ProtectedRoute>
-              <DonorDashboardPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/campaigns/edit/:id" element={
-            <ProtectedRoute>
-              <EditCampaignPage />
-            </ProtectedRoute>
-          } />
 
           {/* 404 route */}
           <Route
