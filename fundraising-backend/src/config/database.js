@@ -10,7 +10,6 @@ const connectDB = async () => {
     // Detailed debugging
     if (!mongoURI) {
       console.error('❌ MONGO_URI is not defined in environment variables');
-      console.log('Available env vars:', Object.keys(process.env).filter(k => !k.includes('SECRET')));
       throw new Error('MONGO_URI environment variable is required');
     }
 
@@ -19,13 +18,12 @@ const connectDB = async () => {
     // Remove potential whitespace/newlines
     const cleanURI = mongoURI.trim();
 
-    await mongoose.connect(cleanURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Connect without deprecated options (Mongoose 6+ doesn't need them)
+    await mongoose.connect(cleanURI);
 
-    console.log('\n✓ MongoDB connected successfully!');
-    console.log(`✓ Database: ${mongoose.connection.name}`);
+    console.log('\n✅ MongoDB connected successfully!');
+    console.log(`✅ Database: ${mongoose.connection.name}`);
+    console.log(`✅ Host: ${mongoose.connection.host}\n`);
   } catch (error) {
     console.error('\n❌ MongoDB Connection Failed!');
     console.error('Error Type:', error.name);
