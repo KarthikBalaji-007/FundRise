@@ -1,40 +1,39 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+const authRoutes = require('./routes/authRoutes');
+const campaignRoutes = require('./routes/campaignRoutes');
 const donationRoutes = require('./routes/donationRoutes');
-require('dotenv').config();
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
-// Middlewares
-app.use(helmet());
-app.use(cors());
-app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// CORS configuration - allow Vercel frontend
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://fundrise-umber.vercel.app', // Your Vercel URL
+    /\.vercel\.app$/ // Allow all Vercel preview deployments
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
 
-// Test route
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'FundRise API is running'
-  });
-});
+app.use(cors(corsOptions));
+app.use(express.json());
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/campaigns', require('./routes/campaignRoutes'));
+app.use('/api/auth', authRoutes);
+app.use('/api/campaigns', campaignRoutes);
 app.use('/api/donations', donationRoutes);
-app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/users', userRoutes);
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+// Health check
+app.get('/', (req, res) => {
+  res.json({
+    message: 'FundRaise API is running!',
+    status: 'healthy',
+    timestamp: new Date().toISOString()
   });
 });
 
