@@ -1,4 +1,4 @@
-// Only load dotenv in development (when .env file exists locally)
+// Load environment variables ONLY in development
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
@@ -12,17 +12,18 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     console.log('Environment check:');
-    console.log('- NODE_ENV:', process.env.NODE_ENV || 'not set');
+    console.log('- NODE_ENV:', process.env.NODE_ENV || 'development');
     console.log('- MONGO_URI:', process.env.MONGO_URI ? 'SET ✓' : 'MISSING ✗');
     console.log('- JWT_SECRET:', process.env.JWT_SECRET ? 'SET ✓' : 'MISSING ✗');
     console.log('- PORT:', PORT);
 
-    // Wait for database connection before starting server
+    // Connect to MongoDB
     await connectDB();
 
+    // Start server
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`\n✅ Server running on port ${PORT}`);
-      console.log(`✅ Environment: ${process.env.NODE_ENV}`);
+      console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log('\n✨ Application is ready!\n');
     });
   } catch (error) {
