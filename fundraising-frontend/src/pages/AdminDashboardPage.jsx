@@ -21,20 +21,21 @@ const AdminDashboardPage = () => {
   }, [user, activeTab]);
 
   const fetchPendingCampaigns = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const res = await axios.get('/campaigns/admin/pending');
-      // FIX: Ensure we always get an array
-      const campaigns = res.data.data || res.data.campaigns || [];
-      setPendingCampaigns(Array.isArray(campaigns) ? campaigns : []);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load pending campaigns');
-      setPendingCampaigns([]); // Set to empty array on error
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setError('');
+    const res = await axios.get('/campaigns/admin/pending');
+
+    // FIX: Handle the nested structure correctly
+    const campaignsData = res.data.data?.campaigns || res.data.campaigns || res.data.data || [];
+    setPendingCampaigns(Array.isArray(campaignsData) ? campaignsData : []);
+  } catch (err) {
+    setError(err.response?.data?.message || 'Failed to load pending campaigns');
+    setPendingCampaigns([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchUsers = async () => {
     try {
