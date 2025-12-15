@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, admin } = require('../middleware/authMiddleware');
+const { protect, admin } = require('../middlewares/authMiddleware'); // Changed middleware to middlewares
 const User = require('../models/User');
 
 // Get all users (admin only)
