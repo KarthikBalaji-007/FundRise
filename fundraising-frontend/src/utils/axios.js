@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-// Create axios instance with base URL
+// Use environment variable or fallback
+const API_URL = import.meta.env.VITE_API_URL || 'https://fundraising-backend-ipxy.onrender.com/api';
+
 const axiosInstance = axios.create({
-  baseURL: 'https://fundraising-backend-ipxy.onrender.com/api', // ✅ CHANGED THIS LINE
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -1,7 +1,5 @@
-// Load environment variables ONLY in development
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
+// Load environment variables from .env file
+require('dotenv').config();
 
 const app = require('./src/app');
 const connectDB = require('./src/config/database');
