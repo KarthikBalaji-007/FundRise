@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-const authenticate = async (req, res, next) => {
+// Protect routes - require authentication
+const protect = async (req, res, next) => {
   try {
     // Get token from header
     let token;
@@ -21,11 +23,8 @@ const authenticate = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach user info to request
-    req.user = {
-      userId: decoded.userId,
-      role: decoded.role
-    };
+    // Get user from token and attach to request
+    req.user = await User.findById(decoded.userId).select('-password');
 
     next(); // Continue to next middleware/controller
   } catch (error) {
@@ -52,4 +51,19 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-module.exports = { authenticate };
+// Admin middleware - check if user is admin
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({
+      success: false,
+      message: 'Not authorized as admin'
+    });
+  }
+};
+
+// Authenticate alias (for campaignRoutes compatibility)
+const authenticate = protect;
+
+module.exports = { protect, admin, authenticate };
