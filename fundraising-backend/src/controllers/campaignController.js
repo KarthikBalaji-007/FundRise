@@ -7,6 +7,9 @@ exports.createCampaign = async (req, res) => {
   try {
     const { title, description, category, goalAmount, deadline, images, tags } = req.body;
 
+    console.log('📝 Creating campaign with req.user:', req.user);
+    console.log('📝 Request body:', { title, category, goalAmount });
+
     // Create campaign with creatorId from authenticated user
     const campaign = await Campaign.create({
       creatorId: req.user.userId,
@@ -20,13 +23,15 @@ exports.createCampaign = async (req, res) => {
       status: 'pending', // All campaigns start as pending (need admin approval)
     });
 
+    console.log('✅ Campaign created successfully:', campaign._id);
+
     res.status(201).json({
       success: true,
       message: 'Campaign created successfully. Waiting for admin approval.',
       campaign,
     });
   } catch (error) {
-    console.error('Create campaign error:', error);
+    console.error('❌ Create campaign error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create campaign',

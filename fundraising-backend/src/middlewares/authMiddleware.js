@@ -8,12 +8,11 @@ const protect = async (req, res, next) => {
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      // Extract token from "Bearer <token>"
       token = req.headers.authorization.split(' ')[1];
     }
 
-    // Check if token exists
     if (!token) {
+      console.error('❌ No token provided in request');
       return res.status(401).json({
         success: false,
         message: 'Not authorized, no token provided'
@@ -22,13 +21,18 @@ const protect = async (req, res, next) => {
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('✅ Token decoded successfully:', { userId: decoded.userId, role: decoded.role });
 
-    // Get user from token and attach to request
-    req.user = await User.findById(decoded.userId).select('-password');
+    // ✅ FIXED: Attach FULL user info including role
+    req.user = {
+      userId: decoded.userId,
+      role: decoded.role  // ← THIS IS CRITICAL!
+    };
 
-    next(); // Continue to next middleware/controller
+    console.log('✅ req.user set:', req.user);
+    next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    console.error('❌ Auth middleware error:', error);
 
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
@@ -51,7 +55,7 @@ const protect = async (req, res, next) => {
   }
 };
 
-// Admin middleware - check if user is admin
+// Admin middleware
 const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
@@ -63,7 +67,7 @@ const admin = (req, res, next) => {
   }
 };
 
-// Authenticate alias (for campaignRoutes compatibility)
+// Authenticate alias (for backward compatibility)
 const authenticate = protect;
 
 module.exports = { protect, admin, authenticate };
