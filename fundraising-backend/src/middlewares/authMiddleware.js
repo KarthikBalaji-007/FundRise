@@ -12,7 +12,6 @@ const protect = async (req, res, next) => {
     }
 
     if (!token) {
-      console.error('❌ No token provided in request');
       return res.status(401).json({
         success: false,
         message: 'Not authorized, no token provided'
@@ -21,18 +20,16 @@ const protect = async (req, res, next) => {
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('✅ Token decoded successfully:', { userId: decoded.userId, role: decoded.role });
 
-    // ✅ FIXED: Attach FULL user info including role
+    // Attach user info to request object
     req.user = {
       userId: decoded.userId,
-      role: decoded.role  // ← THIS IS CRITICAL!
+      role: decoded.role
     };
 
-    console.log('✅ req.user set:', req.user);
     next();
   } catch (error) {
-    console.error('❌ Auth middleware error:', error);
+    console.error('Auth middleware error:', error);
 
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
